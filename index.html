@@ -271,10 +271,22 @@
             title.innerText = titles[id];
             
             try {
-                frame.srcdoc = b64DecodeUnicode(tools[id]);
+                if (id === 'geis') {
+                    frame.src = 'geis_tool.html';
+                } else if (id === 'gel') {
+                    frame.src = 'gel_tool.html';
+                } else {
+                    frame.srcdoc = b64DecodeUnicode(tools[id]);
+                }
             } catch (e) {
                 console.error("Decoding error:", e);
-                frame.srcdoc = atob(tools[id]);
+                if (id === 'geis') {
+                    frame.src = 'geis_tool.html';
+                } else if (id === 'gel') {
+                    frame.src = 'gel_tool.html';
+                } else {
+                    frame.srcdoc = atob(tools[id]);
+                }
             }
             
             container.style.display = 'flex';
@@ -288,6 +300,7 @@
             
             container.style.display = 'none';
             dashboard.style.display = 'flex';
+            frame.src = 'about:blank';
             frame.srcdoc = '';
         }
 
@@ -300,7 +313,7 @@
             }, 200);
 
             // Register Service Worker
-            if ('serviceWorker' in navigator) {
+            if ('serviceWorker' in navigator && (location.protocol === 'http:' || location.protocol === 'https:')) {
                 navigator.serviceWorker.register('sw.js')
                     .then(registration => console.log('SW registered:', registration))
                     .catch(error => console.log('SW registration failed:', error));
