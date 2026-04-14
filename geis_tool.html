@@ -38386,6 +38386,10 @@
       if (!yyyy || !mm || !dd) return '';
       return `${dd}.${mm}.${yyyy}`;
     }
+    function isoToGeisDateTime(iso, time) {
+      const date = isoToGeis(iso);
+      return date ? `${date} ${time}` : '';
+    }
     function parseWarenwert(val) {
       const s = String(val || '').trim();
       if (!s) return NaN;
@@ -38443,8 +38447,8 @@
         // auf alle bestehenden Sendungen anwenden
         result.forEach(r => {
           if (!r || !r.row) return;
-          r.row.ABHOLDATUM = geis;
-          r.row.ABHOLDATUMVON = geis;
+          r.row.ABHOLDATUM = isoToGeisDateTime(iso, '14:00');
+          r.row.ABHOLDATUMVON = isoToGeisDateTime(iso, '12:00');
         });
         renderTable();
       };
@@ -38510,8 +38514,8 @@
 
           const exportRow = {
             ...fixed,
-            ABHOLDATUM: currentPickupDateGeis,
-            ABHOLDATUMVON: currentPickupDateGeis,
+            ABHOLDATUM: isoToGeisDateTime(currentPickupDateISO, '14:00'),
+            ABHOLDATUMVON: isoToGeisDateTime(currentPickupDateISO, '12:00'),
             WARENWERT: warenwert,
             ENAME1: name, ENAME2: o['ENAME2'] || '', ESTRASSE: street, ELAND: "DEU", EPLZ: plzNorm,
             EORT: ortNorm, EEMAIL: o['IODEMAIL'] || '', ETELNR: telefon, EKDNR: o['Auftrag'],

@@ -270,6 +270,12 @@
 
             title.innerText = titles[id];
             
+            // Reset iframe state and show the tool overlay immediately
+            frame.removeAttribute('srcdoc');
+            frame.src = 'about:blank';
+            container.style.display = 'flex';
+            dashboard.style.display = 'none';
+
             try {
                 if (id === 'geis') {
                     frame.src = 'geis_tool.html';
@@ -288,9 +294,6 @@
                     frame.srcdoc = atob(tools[id]);
                 }
             }
-            
-            container.style.display = 'flex';
-            dashboard.style.display = 'none';
         }
 
         function closeTool() {
