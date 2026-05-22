@@ -30,11 +30,13 @@
 
     const GEL_CSV_DEFAULT_CUSTOMER_NUMBER = "10319"; // GEL CSV Spalte 1 / AUFNR
     const GEL_PREVIOUS_DEFAULT_CUSTOMER_NUMBER = "48004";
-    const GEL_IMPORT_SETTINGS_VERSION = 3;
+    const GEL_DEFAULT_INSURANCE_SURCHARGE_CENTS = 6000;
+    const GEL_PREVIOUS_DEFAULT_INSURANCE_SURCHARGE_CENTS = 5000;
+    const GEL_IMPORT_SETTINGS_VERSION = 4;
 
     const defaultGelImportSettings = {
       customerNumber: GEL_CSV_DEFAULT_CUSTOMER_NUMBER,
-      insuranceSurchargeCents: 5000,
+      insuranceSurchargeCents: GEL_DEFAULT_INSURANCE_SURCHARGE_CENTS,
       settingsVersion: GEL_IMPORT_SETTINGS_VERSION
     };
 
@@ -66,14 +68,23 @@
           saved.settingsVersion !== GEL_IMPORT_SETTINGS_VERSION &&
           savedCustomerNumber === GEL_PREVIOUS_DEFAULT_CUSTOMER_NUMBER
         ) ? defaultGelImportSettings.customerNumber : savedCustomerNumber;
+        const parsedSurchargeCents = parseInt(saved.insuranceSurchargeCents, 10);
+        const savedSurchargeCents = Number.isFinite(parsedSurchargeCents)
+          ? Math.max(0, parsedSurchargeCents)
+          : null;
+        const insuranceSurchargeCents = (
+          savedSurchargeCents === null ||
+          (
+            saved.settingsVersion !== GEL_IMPORT_SETTINGS_VERSION &&
+            savedSurchargeCents === GEL_PREVIOUS_DEFAULT_INSURANCE_SURCHARGE_CENTS
+          )
+        ) ? defaultGelImportSettings.insuranceSurchargeCents : savedSurchargeCents;
 
         return {
           ...defaultGelImportSettings,
           ...saved,
           customerNumber,
-          insuranceSurchargeCents: Number.isFinite(parseInt(saved.insuranceSurchargeCents, 10))
-            ? Math.max(0, parseInt(saved.insuranceSurchargeCents, 10))
-            : defaultGelImportSettings.insuranceSurchargeCents,
+          insuranceSurchargeCents,
           settingsVersion: GEL_IMPORT_SETTINGS_VERSION
         };
       } catch (error) {
@@ -1831,7 +1842,7 @@
     </div>
     <div class="settings-field">
       <label for="gelInsuranceSurcharge">Warenwert-Aufschlag (€)</label>
-      <input id="gelInsuranceSurcharge" type="text" inputmode="decimal" autocomplete="off" placeholder="50,00"
+      <input id="gelInsuranceSurcharge" type="text" inputmode="decimal" autocomplete="off" placeholder="60,00"
         onchange="updateGelImportSetting('insuranceSurchargeCents', this.value)">
     </div>
 
@@ -47868,7 +47879,7 @@
           let priceGrossStr = String(row[50] || "0").trim();
           priceGrossStr = priceGrossStr.replace(/\s/g, "").replace(/\./g, "").replace(",", ".");
           const priceGrossNum = parseFloat(priceGrossStr) || 0;
-          const priceGrossCents = String(Math.round(priceGrossNum * 100) + (window.getGelInsuranceSurchargeCents ? window.getGelInsuranceSurchargeCents() : 5000));
+          const priceGrossCents = String(Math.round(priceGrossNum * 100) + (window.getGelInsuranceSurchargeCents ? window.getGelInsuranceSurchargeCents() : GEL_DEFAULT_INSURANCE_SURCHARGE_CENTS));
 
           let optDims = calculateOptimalDimensions(weightRounded, lengthCM, widthCM, heightCM);
           let tariffResult = calculateTariff(weightRounded, optDims.length, optDims.width, optDims.height, null);
