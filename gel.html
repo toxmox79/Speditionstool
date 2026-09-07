@@ -47821,6 +47821,9 @@
           // OrderItem.orderItemName (Spalte 49)
           const itemNameRaw = row[49] ? String(row[49]) : "";
           if (itemNameRaw.toLowerCase().includes("versandkosten")) continue;
+          // Bundle-Bestandteile werden von Plenty mit "[-]" markiert.
+          // In der GEL-Tabelle erscheint nur der zugehörige [BUNDLE]-Hauptartikel.
+          if (/^\s*\[-\]/.test(itemNameRaw)) continue;
 
           const isHerdset = /herd\s*set/i.test(itemNameRaw) || /herdset/i.test(itemNameRaw);
           // Anzeige ohne führende Zahl
@@ -47860,8 +47863,8 @@
           const email = row[42] ? String(row[42]) : "";
 
           // Stückzahl / Colli-Anzahl
-          const gelColli = row[20] ? parseInt(String(row[20]).trim()) : 1;
-          const orderItemQty = row[48] ? parseInt(String(row[48]).trim()) : 1;
+          const gelColli = row[20] ? (parseInt(String(row[20]).trim(), 10) || 1) : 1;
+          const orderItemQty = row[48] ? (parseInt(String(row[48]).trim(), 10) || 1) : 1;
           const anzahl = String(Math.max(gelColli, orderItemQty));
 
           // Gewicht parsen, dann runden
@@ -47879,7 +47882,8 @@
           let priceGrossStr = String(row[50] || "0").trim();
           priceGrossStr = priceGrossStr.replace(/\s/g, "").replace(/\./g, "").replace(",", ".");
           const priceGrossNum = parseFloat(priceGrossStr) || 0;
-          const priceGrossCents = String(Math.round(priceGrossNum * 100) + (window.getGelInsuranceSurchargeCents ? window.getGelInsuranceSurchargeCents() : GEL_DEFAULT_INSURANCE_SURCHARGE_CENTS));
+          const insuranceSurchargeCents = window.getGelInsuranceSurchargeCents ? window.getGelInsuranceSurchargeCents() : GEL_DEFAULT_INSURANCE_SURCHARGE_CENTS;
+          const priceGrossCents = String((Math.round(priceGrossNum * 100) + insuranceSurchargeCents) * orderItemQty);
 
           let optDims = calculateOptimalDimensions(weightRounded, lengthCM, widthCM, heightCM);
           let tariffResult = calculateTariff(weightRounded, optDims.length, optDims.width, optDims.height, null);
@@ -48013,7 +48017,7 @@
 
       data.forEach((item, idx) => {
         const tr = document.createElement("tr");
-        const weightWarning = item.overweight ? "weight-warning" : "";
+        const weightWarning = item.overweight && getSelectedTarifChoice(item) !== "P2" ? "weight-warning" : "";
 
         // Duplicate Check
         const addrKey = (item.adresse || "").trim().toLowerCase();
