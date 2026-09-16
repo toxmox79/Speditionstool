@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shipping-toolkit-v19';
+const CACHE_NAME = 'shipping-toolkit-v21';
 const ASSETS = [
     'index.html',
     'manifest.json',

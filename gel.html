@@ -47412,9 +47412,28 @@
       };
     }
 
+    function usesGelUpTo59KgTariff2Rule(weight, h) {
+      const weightKg = Number(weight) || 0;
+      const heightCm = Number(h) || 0;
+      return weightKg > 0 && weightKg <= 59 && heightCm > 0 && heightCm <= 150;
+    }
+
     function calculateTariff(weight, l, w, h, forcePalletized = null) {
       const volumeWeight = calculateVolumeWeight(l, w, h);
       const effectiveWeight = Math.max(weight, volumeWeight);
+
+      // GEL-Sonderregel: bis 59 kg bei maximal 150 cm Höhe immer Tarif 2 (unpalettiert).
+      // Eine ausdrücklich manuell gewählte P2-Einstellung hat weiterhin Vorrang.
+      if (usesGelUpTo59KgTariff2Rule(weight, h) && forcePalletized !== true) {
+        return {
+          tarif: "2",
+          isPalletized: false,
+          palletPreference: null,
+          effectiveWeight,
+          info: "Unpalettiert – Sonderregel bis 59 kg / Höhe bis 150 cm",
+          maxWeight: 60
+        };
+      }
 
       let bestTariffCode = "2";
       let isPalletized = false;
@@ -47472,6 +47491,7 @@
     }
 
     function isOverweight(weight, l, w, h) {
+      if (usesGelUpTo59KgTariff2Rule(weight, h)) return false;
       const volumeWeight = calculateVolumeWeight(l, w, h);
       const eff = Math.max(weight, volumeWeight);
       return eff > 101;
