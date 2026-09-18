@@ -1987,6 +1987,7 @@
     if (window.pdfjsLib) {
       pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
     }
+    const PDFJS_STANDARD_FONT_DATA_URL = "https://unpkg.com/pdfjs-dist@3.11.174/standard_fonts/";
 
     const fixed = {
       AUFNR: GEL_CSV_DEFAULT_CUSTOMER_NUMBER,
@@ -47633,7 +47634,11 @@
 
       try {
         const arrayBuffer = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        const pdf = await pdfjsLib.getDocument({
+          data: arrayBuffer,
+          standardFontDataUrl: PDFJS_STANDARD_FONT_DATA_URL,
+          useSystemFonts: false
+        }).promise;
 
         gelPdfLabels = [];
         selectedGelPdfLabels = new Set();
